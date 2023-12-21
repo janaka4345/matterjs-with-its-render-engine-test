@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Engine, Render, Bodies, World } from "matter-js";
+import { Engine, Render, Bodies, Composite, Runner } from "matter-js";
 
 export default function Canvas1(props) {
   const scene = useRef();
@@ -21,19 +21,27 @@ export default function Canvas1(props) {
       },
     });
 
-    World.add(engine.current.world, [
+    Composite.add(engine.current.world, [
       Bodies.rectangle(cw / 2, -10, cw, 20, { isStatic: true }),
       Bodies.rectangle(-10, ch / 2, 20, ch, { isStatic: true }),
       Bodies.rectangle(cw / 2, ch + 10, cw, 20, { isStatic: true }),
       Bodies.rectangle(cw + 10, ch / 2, 20, ch, { isStatic: true }),
     ]);
 
-    Engine.run(engine.current);
+    // run the renderer
     Render.run(render);
+
+    // create runner
+    const runner = Runner.create();
+
+    // run the engine
+    Runner.run(runner, engine.current);
 
     return () => {
       Render.stop(render);
-      World.clear(engine.current.world);
+      Runner.stop(runner);
+      Composite.clear(engine.current.world, engine.current.world.bodies);
+      Composite.remove(engine.current.world, engine.current.world.bodies);
       Engine.clear(engine.current);
       render.canvas.remove();
       render.canvas = null;
@@ -65,7 +73,7 @@ export default function Canvas1(props) {
           },
         },
       );
-      World.add(engine.current.world, [ball]);
+      Composite.add(engine.current.world, [ball]);
     }
   };
 
